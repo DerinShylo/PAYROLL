@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="nord">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ title or "PayRoll" }}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Sidebar fixed with reserved width for main */
+    :root { --sidebar-width: 16rem; } /* 64 */
+    .app-sidebar {
+      width: var(--sidebar-width);
+      position: fixed;
+      top: 4rem; /* below navbar */
+      left: 0;
+      height: calc(100vh - 4rem);
+      background-color: var(--fallback-b1, theme(colors.base-100));
+      border-right: 1px solid var(--fallback-b3, theme(colors.base-300));
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow-y: auto;
+    }
+    .app-main {
+      margin-left: var(--sidebar-width);
+    }
+    @media (max-width: 640px) {
+      :root { --sidebar-width: 13rem; }
+      .app-sidebar { position: static; height: auto; }
+      .app-main { margin-left: 0; }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-base-200 flex flex-col">
+
+  <!-- NAVBAR -->
+  <nav class="navbar bg-base-100 shadow-md px-6 sticky top-0 z-50">
+    <div class="flex items-center justify-between w-full">
+      <!-- Logo and Title -->
+      <div class="flex items-center space-x-3">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="College Logo" class="h-10 w-auto rounded-md">
+        <h1 class="text-xl font-bold text-primary">Madha Engineering College</h1>
+      </div>
+
+      <!-- Logout -->
+      {% if current_user.is_authenticated %}
+      <div>
+        <a href="{{ url_for('routes.logout') }}" class="btn btn-sm btn-outline btn-error flex items-center gap-1">
+          🚪 Logout
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- MAIN WRAPPER -->
+  <div class="flex flex-1 overflow-hidden">
+
+    {% if current_user.is_authenticated %}
+    <!-- FIXED SIDEBAR -->
+    <aside class="app-sidebar">
+      <nav class="p-4">
+        <ul class="menu menu-vertical text-base font-medium space-y-1">
+
+          <!-- Dashboard (All Users) -->
+          <li>
+            <a href="{{ url_for('routes.dashboard') }}" class="hover:bg-base-200 rounded-lg">
+              🏠 Dashboard
+            </a>
+          </li>
+
+          <!-- ======================================================
+               ADMIN ACCESS → Sees Everything
+          ======================================================= -->
+          {% if current_user.is_admin %}
+          <li class="mt-4 opacity-70 font-semibold text-sm tracking-wider">ADMIN MENU</li>
+          <li><a href="{{ url_for('routes.new_staff') }}" class="hover:bg-base-200 rounded-lg">➕ New Staff Entry</a></li>
+          <li><a href="{{ url_for('routes.d_r_page') }}" class="hover:bg-base-200 rounded-lg">💰 Deductions & Reimbursements</a></li>
+          <li><a href="{{ url_for('routes.salary_overview') }}" class="hover:bg-base-200 rounded-lg">📄 Salary Overview</a></li>
+          <li><a href="{{ url_for('routes.lop_page') }}" class="hover:bg-base-200 rounded-lg">🕒 LOP Entry</a></li>
+          <li><a href="{{ url_for('routes.fixer') }}" class="hover:bg-base-200 rounded-lg">⚙️ Adjust Reimbursements</a></li>
+          <li><a href="{{ url_for('routes.professional_tax') }}" class="hover:bg-base-200 rounded-lg">📊 Professional Tax</a></li>
+
+          <!-- Divider -->
+          <li class="border-t border-base-300 my-3"></li>
+          {% endif %}
+
+          <!-- ======================================================
+               ACCOUNTS ACCESS (if not admin)
+          ======================================================= -->
+          {% if current_user.is_accounts and not current_user.is_admin %}
+          <li class="mt-4 opacity-70 font-semibold text-sm tracking-wider">ACCOUNTS MENU</li>
+          <li><a href="{{ url_for('routes.new_staff') }}" class="hover:bg-base-200 rounded-lg">➕ New Staff Entry</a></li>
+          <li><a href="{{ url_for('routes.d_r_page') }}" class="hover:bg-base-200 rounded-lg">💰 Deductions & Reimbursements</a></li>
+          <li><a href="{{ url_for('routes.salary_overview') }}" class="hover:bg-base-200 rounded-lg">📄 Salary Overview</a></li>
+          <li><a href="{{ url_for('routes.professional_tax') }}" class="hover:bg-base-200 rounded-lg">📊 Professional Tax</a></li>
+
+          {% endif %}
+
+          <!-- ======================================================
+               HR ACCESS (if not admin/accounts)
+          ======================================================= -->
+          {% if current_user.is_hr and not current_user.is_admin and not current_user.is_accounts %}
+          <li class="mt-4 opacity-70 font-semibold text-sm tracking-wider">HR MENU</li>
+          <li><a href="{{ url_for('routes.lop_page') }}" class="hover:bg-base-200 rounded-lg">🕒 LOP Entry</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </aside>
+    {% endif %}
+
+    <!-- MAIN CONTENT -->
+    <main class="app-main flex-1 p-6 overflow-y-auto mt-4">
+      {% block content %}
+      {% endblock %}
+    </main>
+  </div>
+</body>
+</html>

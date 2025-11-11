@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="p-8">
+  <h1 class="text-4xl font-bold text-primary mb-4">
+    Welcome, {{ current_user.username|capitalize }}
+  </h1>
+
+  <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
+
+    <!-- ==========================================
+         Accounts + Admin Access: Staff & Salary
+    =========================================== -->
+    {% if current_user.is_accounts or current_user.is_admin %}
+    <a href="{{ url_for('routes.new_staff') }}" class="card w-64 bg-base-100 shadow-xl hover:shadow-2xl border border-base-300 transition">
+      <div class="card-body text-center">
+        <h2 class="card-title text-secondary">New Staff Entry</h2>
+      </div>
+    </a>
+
+    <a href="{{ url_for('routes.d_r_page') }}" class="card w-64 bg-base-100 shadow-xl hover:shadow-2xl border border-base-300 transition">
+      <div class="card-body text-center">
+        <h2 class="card-title text-secondary">Salary</h2>
+      </div>
+    </a>
+
+    <a href="{{ url_for('routes.professional_tax') }}" class="card w-64 bg-base-100 shadow-xl hover:shadow-2xl border border-base-300 transition">
+      <div class="card-body text-center">
+        <h2 class="card-title text-secondary">Professional Tax</h2>
+      </div>
+    </a>
+    {% endif %}
+
+    <!-- ==========================================
+         HR + Admin Access: LOP
+    =========================================== -->
+    {% if current_user.is_hr or current_user.is_admin %}
+    <a href="{{ url_for('routes.lop_page') }}" class="card w-64 bg-base-100 shadow-xl hover:shadow-2xl border border-base-300 transition">
+      <div class="card-body text-center">
+        <h2 class="card-title text-secondary">LOP</h2>
+      </div>
+    </a>
+    {% endif %}
+
+    <!-- ==========================================
+         Admin-Only Pages
+    =========================================== -->
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('routes.fixer') }}" class="card w-64 bg-base-100 shadow-xl hover:shadow-2xl border border-base-300 transition">
+      <div class="card-body text-center">
+        <h2 class="card-title text-secondary">Adjust Reimbursements</h2>
+      </div>
+    </a>
+
+    <a href="{{ url_for('routes.professional_tax') }}" class="card w-64 bg-base-100 shadow-xl hover:shadow-2xl border border-base-300 transition">
+      <div class="card-body text-center">
+        <h2 class="card-title text-secondary">Professional Tax</h2>
+      </div>
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

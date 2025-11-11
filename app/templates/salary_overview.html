@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="p-8 space-y-14">
+  <h1 class="text-4xl font-bold text-center text-primary mb-8">
+    Salary Overview
+  </h1>
+
+  <!-- =========================
+       FILTER SECTION
+  ========================== -->
+  <form method="GET" action="/salary_overview" class="card bg-base-100 shadow-xl border border-base-300 p-8 rounded-2xl space-y-6">
+    <h2 class="text-2xl font-semibold text-secondary mb-4">Filter by Month & Year</h2>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Month -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Month</span></label>
+        <select name="month" class="select select-bordered w-full">
+          <option value="">All</option>
+          {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+            {{ ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m-1] }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Year -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Year</span></label>
+        <input type="number" name="year" value="{{ selected_year or '' }}" placeholder="e.g., 2025" class="input input-bordered w-full">
+      </div>
+
+      <!-- Submit -->
+      <div class="form-control flex justify-end md:pt-8">
+        <button type="submit" class="btn btn-primary w-full md:w-auto">🔍 Filter</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- =========================
+       TABLE SECTION
+  ========================== -->
+  <section class="card bg-base-100 shadow-xl border border-base-300 p-8 rounded-2xl">
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+  <h2 class="text-2xl font-semibold text-secondary">Salary Records</h2>
+
+  <div class="flex gap-3">
+    <a href="{{ url_for('routes.export_salary_excel', month=selected_month, year=selected_year) }}"
+       class="btn btn-outline btn-success text-sm md:text-base">
+      📊 Export Excel
+    </a>
+    <a href="{{ url_for('routes.export_salary_pdf', month=selected_month, year=selected_year) }}"
+       class="btn btn-outline btn-error text-sm md:text-base">
+      📄 Export PDF
+    </a>
+  </div>
+</div>
+
+    {% if records %}
+    <div class="overflow-x-auto">
+      <table class="table table-zebra w-full">
+        <thead>
+          <tr class="text-sm text-center bg-base-200">
+            <th>#</th>
+            <th>Staff ID</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Base Pay (₹)</th>
+            <th>LOP Days</th>
+            <th>LOP/Day (₹)</th>
+            <th>LOP Amount (₹)</th>
+            <th>EPF (₹)</th>
+            <th>ESI (₹)</th>
+            <th>IT (₹)</th>
+            <th>Loan (₹)</th>
+            <th>Advance (₹)</th>
+            <th>Uniform (₹)</th>
+            <th>CD (₹)</th>
+            <th>Hostel (₹)</th>
+            <th>Misc (₹)</th>
+            <th>Total Deductions (₹)</th>
+            <th>Reimbursements (₹)</th>
+            <th>Net Salary (₹)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for r in records %}
+          {% set lop_per_day = (r.gross_salary / r.days_in_month) if r.days_in_month else 0 %}
+          <tr class="text-center">
+            <td>{{ loop.index }}</td>
+            <td>{{ r.staff_ref.staff_id }}</td>
+            <td>{{ r.staff_ref.name }}</td>
+            <td>{{ r.staff_ref.department }}</td>
+            <td>{{ r.staff_ref.designation }}</td>
+            <td>{{ "%.2f"|format(r.gross_salary) }}</td>
+            <td>{{ r.lop_days }}</td>
+            <td>{{ "%.2f"|format(lop_per_day) }}</td>
+            <td>{{ "%.2f"|format(r.lop_amount) }}</td>
+            <td>{{ "%.2f"|format(r.epf) }}</td>
+            <td>{{ "%.2f"|format(r.esi) }}</td>
+            <td>{{ "%.2f"|format(r.it or 0) }}</td>
+            <td>{{ "%.2f"|format(r.loan or 0) }}</td>
+            <td>{{ "%.2f"|format(r.advance or 0) }}</td>
+            <td>{{ "%.2f"|format(r.uniform or 0) }}</td>
+            <td>{{ "%.2f"|format(r.cd or 0) }}</td>
+            <td>{{ "%.2f"|format(r.hostel or 0) }}</td>
+            <td>{{ "%.2f"|format(r.misc or 0) }}</td>
+            <td>{{ "%.2f"|format(r.total_deductions) }}</td>
+            <td>{{ "%.2f"|format(r.total_reimbursements) }}</td>
+            <td class="font-bold text-success">{{ "%.2f"|format(r.net_salary) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="text-center text-gray-500 mt-6">No salary records found for the selected period.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}

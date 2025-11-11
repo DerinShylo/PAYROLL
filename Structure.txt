@@ -1,0 +1,11 @@
+base.html
+│   │   ├── login_user.html
+│   │   ├── login_admin.html
+│   │   ├── user_dashboard.html
+│   │   ├── admin_dashboard.html
+│   │   ├── staff_details.html
+│   │   ├── new_staff.html
+│   │   ├── salary.html
+│   │   ├── fixer.html
+│   │   └── tax_settings.html
+

@@ -1,0 +1,35 @@
+# -----------------------
+# Core Web Framework
+# -----------------------
+Flask==3.0.3
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+Flask-WTF==1.2.1
+
+# -----------------------
+# Database + ORM
+# -----------------------
+SQLAlchemy==2.0.35
+greenlet==3.1.1
+
+# -----------------------
+# PDF / Excel Export
+# -----------------------
+fpdf2==2.7.9
+pandas==2.2.3
+openpyxl==3.1.5
+XlsxWriter==3.2.0
+
+# -----------------------
+# Utility / Time / Encoding
+# -----------------------
+python-dateutil==2.9.0.post0
+Werkzeug==3.0.4
+Jinja2==3.1.4
+itsdangerous==2.2.0
+
+# -----------------------
+# Optional (recommended)
+# -----------------------
+email-validator==2.2.0

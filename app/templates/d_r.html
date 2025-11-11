@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="p-8 space-y-14"> <!-- Added more breathing space -->
+  <h1 class="text-4xl font-bold text-center text-primary mb-8">
+    Deductions & Reimbursements
+  </h1>
+
+  <!-- =========================
+       STAFF SELECTION SECTION
+  ========================== -->
+  <form method="POST" action="/d_r" id="drForm">
+    <section class="card bg-base-100 shadow-xl border border-base-300 p-8 rounded-2xl space-y-6">
+      <h2 class="text-2xl font-semibold text-secondary mb-6">Select Employee & Month</h2>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Salary Month</span></label>
+          <input type="month" name="salary_month" id="salaryMonth" class="input input-bordered w-full" required>
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Employee Name</span></label>
+          <select name="employee_name" id="employeeSelect" class="select select-bordered w-full" required>
+            <option disabled selected>Select Employee</option>
+            {% for staff in staff_list %}
+              <option value="{{ staff.id }}"
+                      data-empid="{{ staff.staff_id }}"
+                      data-gross="{{ staff.base_salary + (staff.allowances or 0) }}">
+                {{ staff.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mt-6">
+        <input type="hidden" id="lopDays" name="lop_days" value="0">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Staff ID</span></label>
+          <input type="text" id="empIdDisplay" class="input input-bordered w-full bg-base-200" readonly>
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Gross Salary (₹)</span></label>
+          <input type="text" id="grossSalaryDisplay" class="input input-bordered w-full bg-base-200" readonly>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================
+         DEDUCTIONS & REIMBURSEMENTS
+    ========================== -->
+    <section class="card bg-base-100 shadow-xl border border-base-300 p-8 rounded-2xl space-y-6">
+      <h2 class="text-2xl font-semibold text-secondary mb-6">Deductions</h2>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-10">
+        
+        <div class="form-control">
+          <label class="label"><span class="label-text">Income Tax (₹)</span></label>
+          <input type="number" name="income_tax" id="income_tax" class="input input-bordered w-full" min="0" value="0">
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Loan (₹)</span></label>
+          <input type="number" name="loan" id="loan" class="input input-bordered w-full" min="0" value="0">
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Advance (₹)</span></label>
+          <input type="number" name="advance" id="advance" class="input input-bordered w-full" min="0" value="0">
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Uniform (₹)</span></label>
+          <input type="number" name="uniform" id="uniform" class="input input-bordered w-full" min="0" value="0">
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">CD (₹)</span></label>
+          <input type="number" name="cd" id="cd" class="input input-bordered w-full" min="0" value="0">
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Hostel (₹)</span></label>
+          <input type="number" name="hostel" id="hostel" class="input input-bordered w-full" min="0" value="0">
+        </div>
+
+        <div class="form-control md:col-span-2">
+          <label class="label"><span class="label-text">Miscellaneous (₹)</span></label>
+          <input type="number" name="misc" id="misc" class="input input-bordered w-full" min="0" value="0">
+        </div>
+      </div>
+
+      <!-- Reimbursements -->
+      <h2 class="text-2xl font-semibold text-secondary mb-6">Reimbursements</h2>
+
+      <div id="reimbursements-container" class="space-y-4">
+        <div class="grid md:grid-cols-2 gap-6 reimbursement-row">
+          <div class="form-control">
+            <label class="label"><span class="label-text">Reimbursement Designation</span></label>
+            <input type="text" name="reimbursement_designation[]" class="input input-bordered w-full" placeholder="e.g. HOD, Assistant Professor">
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Reimbursement Amount (₹)</span></label>
+            <input type="number" name="reimbursement_amount[]" class="input input-bordered w-full reimbursement-amount" min="0" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button type="button" id="add-reimbursement" class="btn btn-outline btn-primary mt-4">
+          ➕ Add Another Reimbursement
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================
+         GROSS PAY SUMMARY (LIVE)
+    ========================== -->
+    <section id="summary-section" class="card bg-base-100 shadow-2xl border border-base-300 p-8 rounded-2xl space-y-4 hidden">
+      <h2 class="text-2xl font-semibold text-secondary mb-6">Gross Pay Summary</h2>
+      <div class="grid md:grid-cols-2 gap-6 text-lg" id="summaryContent"></div>
+    </section>
+
+<!-- =========================
+     ACTION BUTTONS
+========================== -->
+<div class="flex flex-col md:flex-row justify-between items-center mt-10 gap-4">
+
+  <!-- Save Button -->
+  <button type="submit" class="btn btn-primary text-lg w-full md:w-auto">
+    Save
+  </button>
+
+</div>
+
+<!-- =========================
+     SCRIPT SECTION
+========================== -->
+<script>
+  const employeeSelect = document.getElementById('employeeSelect');
+  const empIdDisplay = document.getElementById('empIdDisplay');
+  const grossSalaryDisplay = document.getElementById('grossSalaryDisplay');
+  const summarySection = document.getElementById('summary-section');
+  const summaryContent = document.getElementById('summaryContent');
+  const lopDaysInput = document.getElementById('lopDays');
+  const salaryMonthInput = document.getElementById('salaryMonth');
+
+  // Helper: fetch LOP value for selected staff & month
+  async function fetchLopFor(staffId, monthStr) {
+    if (!staffId || !monthStr) {
+      lopDaysInput.value = 0;
+      return 0;
+    }
+    const [year, month] = monthStr.split('-');
+    try {
+      const resp = await fetch(`/api/get_lop?staff_id=${staffId}&month=${month}&year=${year}`);
+      if (!resp.ok) {
+        lopDaysInput.value = 0;
+        return 0;
+      }
+      const j = await resp.json();
+      const lop = parseFloat(j.lop_days || 0);
+      lopDaysInput.value = lop;
+      return lop;
+    } catch (err) {
+      console.error('Error fetching LOP:', err);
+      lopDaysInput.value = 0;
+      return 0;
+    }
+  }
+
+  // When employee or month changes, update employee details and fetch LOP
+  async function onEmployeeOrMonthChange() {
+    const selected = employeeSelect.options[employeeSelect.selectedIndex];
+    empIdDisplay.value = selected ? selected.getAttribute('data-empid') || '' : '';
+    grossSalaryDisplay.value = selected ? selected.getAttribute('data-gross') || '' : '';
+
+    const staffId = selected ? selected.value : null;
+    const monthStr = salaryMonthInput.value;
+    await fetchLopFor(staffId, monthStr);
+    updateSummary();
+  }
+
+  employeeSelect.addEventListener('change', onEmployeeOrMonthChange);
+  salaryMonthInput.addEventListener('change', onEmployeeOrMonthChange);
+
+  // Add reimbursement rows dynamically (unchanged)
+  document.getElementById('add-reimbursement').addEventListener('click', function () {
+    const container = document.getElementById('reimbursements-container');
+    const newRow = document.createElement('div');
+    newRow.classList.add('grid', 'md:grid-cols-2', 'gap-6', 'reimbursement-row');
+    newRow.innerHTML = `
+      <div class="form-control">
+        <label class="label"><span class="label-text">Reimbursement Designation</span></label>
+        <input type="text" name="reimbursement_designation[]" class="input input-bordered w-full">
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Reimbursement Amount (₹)</span></label>
+        <input type="number" name="reimbursement_amount[]" class="input input-bordered w-full reimbursement-amount" min="0" value="0">
+      </div>`;
+    container.appendChild(newRow);
+    newRow.querySelector('.reimbursement-amount').addEventListener('input', updateSummary);
+  });
+
+  // Attach listeners to recalculate summary live (existing inputs)
+  document.querySelectorAll('input, select').forEach(input => {
+    input.addEventListener('input', updateSummary);
+    input.addEventListener('change', updateSummary);
+  });
+
+  // Live salary computation (frontend version) — now uses lopDaysInput.value
+  function updateSummary() {
+    const gross = parseFloat(grossSalaryDisplay.value || 0);
+    const lop = parseFloat(lopDaysInput.value || 0);    // <-- now safe
+    const month = salaryMonthInput.value;
+    if (!month || gross === 0) {
+      summarySection.classList.add('hidden');
+      return;
+    }
+
+    const [year, m] = month.split('-').map(Number);
+    const daysInMonth = new Date(year, m, 0).getDate();
+
+    // LOP (exact) and adjusted gross
+    const lopAmount = (lop / daysInMonth) * gross;
+    const adjustedGross = gross - lopAmount;
+
+    // For EPF/ESI use rounded up lop
+    const roundedLop = Math.ceil(lop);
+    const lopForEpfEsi = (roundedLop / daysInMonth) * gross;
+    const adjustedGrossForEpfEsi = gross - lopForEpfEsi;
+
+    const epf = Math.ceil(adjustedGrossForEpfEsi * 0.70 * 0.12);
+    const esi = Math.ceil(adjustedGrossForEpfEsi * 0.0075);
+
+    const deductionFields = ['income_tax','loan','advance','uniform','cd','hostel','misc'];
+    let manualDeductions = 0;
+    deductionFields.forEach(id => {
+      const v = parseFloat(document.getElementById(id).value || 0);
+      manualDeductions += v;
+    });
+
+    let reimbursements = 0;
+    document.querySelectorAll('.reimbursement-amount').forEach(el => reimbursements += parseFloat(el.value || 0));
+
+    // total deductions EXCLUDE lopAmount (lop already deducted to get adjustedGross)
+    const totalDeductions = epf + esi + manualDeductions;
+    const netSalary = adjustedGross - totalDeductions + reimbursements;
+
+    summarySection.classList.remove('hidden');
+    summaryContent.innerHTML = `
+      <div><strong>Gross Salary:</strong> ₹${gross.toFixed(2)}</div>
+      <div><strong>LOP Amount:</strong> ₹${lopAmount.toFixed(2)}</div>
+      <div><strong>Rounded LOP (for EPF/ESI):</strong> ${roundedLop} day(s)</div>
+      <div><strong>LOP used for EPF/ESI:</strong> ₹${lopForEpfEsi.toFixed(2)}</div>
+      <div><strong>EPF:</strong> ₹${epf.toFixed(2)}</div>
+      <div><strong>ESI:</strong> ₹${esi.toFixed(2)}</div>
+      <div><strong>Total Manual Deductions:</strong> ₹${manualDeductions.toFixed(2)}</div>
+      <div><strong>Total Deductions (EPF+ESI+Manual):</strong> ₹${totalDeductions.toFixed(2)}</div>
+      <div><strong>Total Reimbursements:</strong> ₹${reimbursements.toFixed(2)}</div>
+      <div class="text-xl font-bold text-success mt-4 col-span-2">
+        Net Pay: ₹${netSalary.toFixed(2)}
+      </div>
+    `;
+  }
+
+  // If server supplied default selected values (page re-render after save), trigger fetch & update
+  (async function bootstrap() {
+    // server-side injected values (optional)
+    const serverStaffId = "{{ selected_staff_id or '' }}";
+    const serverMonth = "{{ selected_month or '' }}";
+    if (serverStaffId && serverMonth) {
+      // set selected values in UI if present
+      try {
+        employeeSelect.value = serverStaffId;
+        salaryMonthInput.value = serverMonth;
+      } catch (e) { /* ignore */ }
+      await fetchLopFor(serverStaffId, serverMonth);
+      updateSummary();
+    }
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh]">
+  <div class="card w-full max-w-md shadow-2xl bg-base-100 border border-base-300">
+    <div class="card-body">
+      <h2 class="text-3xl font-bold text-center text-primary mb-4">Login</h2>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-4">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} shadow-sm py-2 text-sm">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('routes.login') }}" class="space-y-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Username</span>
+          </label>
+          <input type="text" name="username" placeholder="Enter your username" class="input input-bordered w-full" required>
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Password</span>
+          </label>
+          <input type="password" name="password" placeholder="Enter your password" class="input input-bordered w-full" required>
+        </div>
+
+        <div class="form-control mt-6">
+          <button type="submit" class="btn btn-primary w-full">Login</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

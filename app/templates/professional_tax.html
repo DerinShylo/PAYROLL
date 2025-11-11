@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="p-8">
+  <h1 class="text-4xl font-bold text-center text-primary mb-8">Professional Tax Configuration</h1>
+
+  <!-- Add New Tax Slab Form -->
+  <div class="card w-full max-w-3xl bg-base-100 shadow-2xl border border-base-300 mx-auto p-8 rounded-xl mb-10">
+    <form method="POST" action="/professional-tax" class="space-y-6">
+      <div class="grid md:grid-cols-3 gap-6">
+
+        <!-- Lower Range -->
+        <div class="form-control">
+          <label class="label"><span class="label-text">From (₹)</span></label>
+          <input type="number" name="range_from" min="0" placeholder="e.g. 10000" class="input input-bordered w-full" required>
+        </div>
+
+        <!-- Upper Range -->
+        <div class="form-control">
+          <label class="label"><span class="label-text">To (₹)</span></label>
+          <input type="number" name="range_to" min="0" placeholder="e.g. 20000" class="input input-bordered w-full" required>
+        </div>
+
+        <!-- Tax Value -->
+        <div class="form-control">
+          <label class="label"><span class="label-text">Tax Amount (₹)</span></label>
+          <input type="number" name="tax_amount" min="0" placeholder="e.g. 200" class="input input-bordered w-full" required>
+        </div>
+      </div>
+
+      <div class="form-control mt-6">
+        <button type="submit" class="btn btn-primary w-full text-lg">Add Tax Slab</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Existing Tax Slabs -->
+  <div class="overflow-x-auto">
+    <h2 class="text-2xl font-semibold text-center text-secondary mb-4">Existing Tax Slabs</h2>
+    <table class="table table-zebra w-full border border-base-300 shadow-md rounded-lg">
+      <thead class="bg-base-200 text-primary">
+        <tr>
+          <th>#</th>
+          <th>Pay Range (₹)</th>
+          <th>Tax Amount (₹)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if tax_slabs %}
+          {% for t in tax_slabs %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ "{:,.0f}".format(t.range_from) }} – {{ "{:,.0f}".format(t.range_to) }}</td>
+            <td>₹{{ "{:,.2f}".format(t.tax_amount) }}</td>
+            <td>
+              <a href="/professional-tax/delete/{{ t.id }}" class="btn btn-sm btn-outline btn-error mx-1"
+                 onclick="return confirm('Are you sure you want to delete this tax slab?');">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="4" class="text-center py-6 text-gray-500">
+              No professional tax slabs defined yet.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

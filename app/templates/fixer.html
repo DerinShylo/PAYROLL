@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="p-8">
+  <h1 class="text-4xl font-bold text-center text-primary mb-8">Salary Fixer</h1>
+
+  <div class="card w-full max-w-3xl bg-base-100 shadow-2xl border border-base-300 mx-auto p-8 rounded-xl">
+    <form method="POST" action="/fixer" class="space-y-6">
+
+      <!-- Department -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Department</span></label>
+        <select id="department" name="department" class="select select-bordered w-full" required>
+          <option disabled selected>Select Department</option>
+          {% for dept in departments %}
+          <option value="{{ dept }}">{{ dept }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Designation -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Designation</span></label>
+        <select id="designation" name="designation" class="select select-bordered w-full" required>
+          <option disabled selected>Select Designation</option>
+          {% for desig in designations %}
+          <option value="{{ desig }}">{{ desig }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Staff Name -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Staff Name</span></label>
+        <select id="staff_name" name="staff_name" class="select select-bordered w-full" required>
+          <option disabled selected>Select Staff</option>
+          {% for staff in staff_list %}
+          <option value="{{ staff.name }}" data-staffid="{{ staff.staff_id }}">{{ staff.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Staff ID (auto-filled) -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Staff ID</span></label>
+        <input type="text" id="staff_id" name="staff_id" readonly
+               placeholder="Will be filled automatically"
+               class="input input-bordered w-full bg-base-200 cursor-not-allowed">
+      </div>
+
+      <!-- Increment Value -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Increment Value (₹)</span></label>
+        <input type="number" name="increment_value" min="0"
+               placeholder="Enter the increment amount" class="input input-bordered w-full" required>
+      </div>
+
+      <!-- Effective Date -->
+      <div class="form-control">
+        <label class="label"><span class="label-text">Effective Date</span></label>
+        <input type="date" name="effective_date" class="input input-bordered w-full" required>
+      </div>
+
+      <!-- Submit -->
+      <div class="form-control mt-6">
+        <button type="submit" class="btn btn-primary w-full text-lg">Apply Increment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Automatically fill staff ID when a staff name is selected
+  document.getElementById('staff_name').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const staffId = selectedOption.getAttribute('data-staffid');
+    document.getElementById('staff_id').value = staffId || '';
+  });
+</script>
+
+{% endblock %}
